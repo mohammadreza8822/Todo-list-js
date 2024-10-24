@@ -32,13 +32,14 @@ const showAlert = (message, type) => {
   }, 2000);
 };
 
-const displayTodos = () => {
+const displayTodos = (data) => {
+  const todoList = data ? data : todos;
   todosBody.innerHTML = "";
-  if (!todos.length) {
+  if (!todoList.length) {
     todosBody.innerHTML = "<tr><td colspan='4'>No task found!</td><tr>";
     return;
   }
-  todos.forEach((todo) => {
+  todoList.forEach((todo) => {
     todosBody.innerHTML += `
       <tr>
         <td>${todo.task}</td>
@@ -47,7 +48,7 @@ const displayTodos = () => {
         <td>
           <button onclick="editHandler('${todo.id}')">Edit</button>
           <button onclick="toggleHandler('${todo.id}')">${
-      todo.completed ? "Undo" : "DO"
+      todo.completed ? "Undo" : "Do"
     }
           </button>
           <button onclick="deleteHandler('${todo.id}')">Delete</button>
@@ -80,7 +81,20 @@ const addHandler = (event) => {
 };
 
 const filterHandler = (event) => {
-  const status = event.dataset.status;
+  let filterTodos = null;
+  const filter = event.target.dataset.filter;
+  switch (filter) {
+    case "pending":
+      filterTodos = todos.filter((todo) => todo.completed === false);
+      break;
+    case "completed":
+      filterTodos = todos.filter((todo) => todo.completed === true);
+      break;
+    default:
+      filterTodos = todos;
+      break;
+  }
+  displayTodos(filterTodos);
 };
 
 const deleteAllHandler = () => {
@@ -103,22 +117,6 @@ const deleteHandler = (id) => {
 };
 
 const toggleHandler = (id) => {
-  // const newTodos = todos.map((todo) => {
-  //   if (todo.id === id) {
-  //     // return {
-  //     //   id: todo.id,
-  //     //   task: todo.task,
-  //     //   date: todo.date,
-  //     //   completed: !todo.completed,
-  //     // };
-  //     return {
-  //       ...todo,
-  //       completed: !todo.completed,
-  //     };
-  //   } else {
-  //     return todo;
-  //   }
-  // });
   const todo = todos.find((todo) => todo.id === id);
   todo.completed = !todo.completed;
   saveToLocalStorage();
@@ -149,7 +147,7 @@ const applyEditHandler = (event) => {
   showAlert("Todo edited successfully.", "success");
 };
 
-window.addEventListener("load", displayTodos);
+window.addEventListener("load", () => displayTodos());
 addButton.addEventListener("click", addHandler);
 editButton.addEventListener("click", applyEditHandler);
 filterButton.forEach((button) => {
